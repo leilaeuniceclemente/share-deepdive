@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Customer Share Deepdive Console</title>
+<style>
+  :root {
+    --primary: #3B5BDB;
+    --primary-light: #EDF2FF;
+    --teal: #0F9B8E;
+    --teal-light: #E6FCF5;
+    --coral: #D9480F;
+    --coral-light: #FFF4E6;
+    --amber: #E67700;
+    --amber-light: #FFF3BF;
+    --green: #2F9E44;
+    --green-light: #EBFBEE;
+    --red: #C92A2A;
+    --red-light: #FFF5F5;
+    --gray-50: #F8F9FA;
+    --gray-100: #F1F3F5;
+    --gray-200: #E9ECEF;
+    --gray-300: #DEE2E6;
+    --gray-500: #ADB5BD;
+    --gray-600: #868E96;
+    --gray-700: #495057;
+    --gray-800: #343A40;
+    --text: #1A1A2E;
+    --text-muted: #6C757D;
+    --border: #E2E8F0;
+    --surface: #FFFFFF;
+    --bg: #F8F9FC;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 10px; gap: 16px; }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .header-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; }
+  .header-title { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+  .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .header-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+  .badge-blue { background: var(--primary-light); color: var(--primary); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-teal { background: var(--teal-light); color: var(--teal); }
+
+  .tabs-row { display: flex; border-top: 1px solid var(--border); }
+  .tab-btn { padding: 9px 18px; font-size: 12.5px; font-weight: 500; color: var(--text-muted); background: none; border: none; border-bottom: 2.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; margin-bottom: -1.5px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 64px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .exec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+  .kpi-delta { font-size: 11.5px; font-weight: 500; margin-top: 5px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--text-muted); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; margin-top: 28px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .section-caption { font-size: 11px; color: var(--text-muted); }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { padding: 9px 12px; text-align: right; font-weight: 600; font-size: 11px; color: var(--text-muted); background: var(--gray-50); border-bottom: 1px solid var(--border); }
+  thead th:first-child { text-align: left; min-width: 180px; }
+  thead th.ctr { text-align: center; min-width: 52px; }
+  tbody tr:hover { background: var(--gray-50); }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: right; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { text-align: left; font-weight: 500; }
+  tbody td.indent { padding-left: 28px; font-weight: 400; color: var(--gray-700); }
+  tbody td.indent2 { padding-left: 44px; font-weight: 400; color: var(--gray-700); }
+  tbody td.ctr { text-align: center; color: var(--text-muted); font-size: 11.5px; }
+  .row-group td { background: var(--primary-light); font-weight: 700; color: var(--primary); }
+  .row-subgroup td { background: var(--gray-50); font-weight: 600; color: var(--gray-700); }
+
+  .chip { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; padding: 1.5px 5px; border-radius: 4px; }
+  .chip.pos { background: var(--green-light); color: var(--green); }
+  .chip.neg { background: var(--red-light); color: var(--red); }
+  .chip.neu { background: var(--gray-100); color: var(--gray-600); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .panel-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 12.5px; font-weight: 700; }
+  .panel-body { padding: 14px 16px; }
+
+  .wf-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .wf-row:last-child { border-bottom: none; }
+  .wf-label { font-size: 12px; font-weight: 500; width: 140px; flex-shrink: 0; }
+  .wf-bar-wrap { flex: 1; position: relative; height: 14px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+  .wf-bar { height: 100%; border-radius: 3px; position: absolute; }
+  .wf-bar.pos { background: var(--green); }
+  .wf-bar.neg { background: var(--red); }
+  .wf-val { font-size: 11.5px; font-weight: 700; width: 46px; text-align: right; flex-shrink: 0; }
+  .wf-note { font-size: 11px; color: var(--text-muted); padding: 0 0 6px 150px; margin-top: -2px; }
+
+  .opp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+  .opp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .opp-type { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); }
+  .opp-title { font-size: 13px; font-weight: 700; line-height: 1.3; }
+  .opp-insight { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .seg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .seg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .seg-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .seg-detail { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .seg-stat-row { display: flex; justify-content: space-between; font-size: 11.5px; margin-top: 4px; }
+  .seg-stat-label { color: var(--text-muted); }
+  .seg-stat-val { font-weight: 600; }
+  .seg-bar { height: 4px; background: var(--gray-100); border-radius: 2px; margin: 6px 0; overflow: hidden; }
+  .seg-bar-fill { height: 100%; border-radius: 2px; }
+  .seg-note { margin-top: 8px; font-size: 11px; font-weight: 600; }
+
+  .controls-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .ctrl-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  select { font-size: 12px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); cursor: pointer; font-family: var(--font); outline: none; }
+  .seg-group { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .seg-btn { font-size: 12px; padding: 5px 12px; border: none; border-right: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-family: var(--font); }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn.active { background: var(--primary); color: #fff; }
+  .seg-btn:hover:not(.active) { background: var(--gray-50); }
+
+  .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+  .chart-title { font-size: 12.5px; font-weight: 700; margin-bottom: 14px; }
+  .legend-row { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .insight-box { background: var(--primary-light); border: 1px solid #C5D8FF; border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12.5px; color: #1A237E; line-height: 1.6; }
+  .insight-box b { color: var(--primary); }
+  .warn-box { background: var(--amber-light); border: 1px solid #FFE08A; border-left: 4px solid var(--amber); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12.5px; color: #7C4A00; line-height: 1.6; }
+  .warn-box b { color: var(--amber); }
+
+  .bb-table-wrap { overflow-x: auto; }
+  .bb-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .bb-table th { background: var(--gray-50); padding: 8px 12px; text-align: right; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .bb-table th:first-child { text-align: left; min-width: 200px; }
+  .bb-table td { padding: 7.5px 12px; text-align: right; border-bottom: 1px solid var(--border); }
+  .bb-table tr:last-child td { border-bottom: none; }
+  .bb-table td:first-child { text-align: left; font-weight: 500; }
+  .bb-table .total-row td { background: var(--primary-light); font-weight: 700; color: var(--primary); }
+  .bb-table .sub-row td { color: var(--gray-600); font-style: italic; padding-left: 24px; }
+  .bb-table .base-row td { font-weight: 500; }
+  .bb-table .bb-row td { background: var(--teal-light); font-weight: 600; }
+  .bb-table .risk-row td { color: var(--red); font-weight: 500; }
+  .bb-table .iya-row td { font-weight: 700; border-top: 2px solid var(--border); }
+  .bb-table .hdr-row td { background: var(--gray-800); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; padding: 6px 12px; }
+
+  .gp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
+  .gp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .gp-card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .gp-brand { font-size: 13px; font-weight: 700; }
+  .gp-iya { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .gp-iya.down { background: var(--red-light); color: var(--red); }
+  .gp-iya.up { background: var(--green-light); color: var(--green); }
+  .gp-body { padding: 14px 16px; }
+  .gp-sec-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; margin-top: 12px; }
+  .gp-sec-label:first-child { margin-top: 0; }
+  .gp-item { font-size: 12px; line-height: 1.6; margin-bottom: 4px; padding-left: 12px; position: relative; }
+  .gp-item::before { content: '·'; position: absolute; left: 0; color: var(--text-muted); }
+  .gp-ask { font-size: 11.5px; color: #7C4A00; font-style: italic; line-height: 1.6; padding: 8px 10px; background: var(--amber-light); border-radius: 5px; border-left: 3px solid var(--amber); margin-top: 8px; }
+
+  .footer { text-align: center; font-size: 11px; color: var(--text-muted); padding: 16px 32px; border-top: 1px solid var(--border); background: var(--surface); margin-top: 32px; }
+
+  @media (max-width: 900px) {
+    .main { padding: 16px; }
+    .exec-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col, .opp-grid, .gp-grid, .seg-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div>
+        <div class="header-title">Customer Share Deepdive Console</div>
+        <div class="header-sub">Multi-source · Store-level · SKU-level · Competitive view · Synthetic data</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-blue">Rolling 3-month</span>
+      <span class="badge badge-amber">Specialty Retail Focus</span>
+      <span class="badge badge-red">Share: −0.8 pts</span>
+    </div>
+  </div>
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('share-table',this)">Share table</button>
+    <button class="tab-btn" onclick="showTab('drivers',this)">Drivers / drainers</button>
+    <button class="tab-btn" onclick="showTab('store-segments',this)">Store segments</button>
+    <button class="tab-btn" onclick="showTab('building-blocks',this)">Building blocks</button>
+    <button class="tab-btn" onclick="showTab('gameplan',this)">Gameplan</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ======================== OVERVIEW ======================== -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="exec-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total share (full year)</div>
+      <div class="kpi-value">8.4<span style="font-size:14px;font-weight:500">%</span></div>
+      <div class="kpi-delta neg">−0.8 pts vs prior year</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Volume growth</div>
+      <div class="kpi-value">+12<span style="font-size:14px;font-weight:500">%</span></div>
+      <div class="kpi-delta pos">vs prior year</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Share gap vs channel avg</div>
+      <div class="kpi-value">−1.2<span style="font-size:14px;font-weight:500"> pts</span></div>
+      <div class="kpi-delta neu">underperforming channel</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Categories in decline</div>
+      <div class="kpi-value">2</div>
+      <div class="kpi-delta neg">Cat A −1.4 · Cat B −0.6</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <b>Headline:</b> Business is growing volume strongly (+12% vs prior year), driven by new store expansion and a shift toward premium spend. However, total portfolio share is declining −0.8 pts as competitor and emerging brands are capturing elevated benefit spaces (hydration, repair, premiumization) faster than the current portfolio addresses them. <b>Cat A and Cat B account for 85% of the share gap</b> — these are the priority categories to win back.
+  </div>
+
+  <div class="warn-box">
+    <b>Watch:</b> Premium-format stores (roughly 12% of total doors but 22% of sales weight) are the steepest bleeder segment. Emerging brands are structurally over-indexed here; our distribution depth in this tier falls below 50% for the fastest-growing product forms.
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Share change by category — current year vs prior year</div>
+    <div class="section-caption">Share point change · positive = gaining · negative = losing</div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title">Share performance vs prior year by category</div>
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Gaining share</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Losing share</div>
+    </div>
+    <div style="position:relative;height:280px;">
+      <canvas id="chart-overview" role="img" aria-label="Horizontal bar chart of share point change vs prior year. Cat A and Cat B are the largest decliners. Cat F and Cat E are gaining.">Cat A: −1.4, Cat B: −0.6, Cat C: −0.2, Cat D: −0.2, Cat E: +0.3, Cat F: +0.6, Cat G: +2.1</canvas>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">What's driving the growth we have vs what's costing us share</div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Growth engines</div><span class="badge badge-green">Protecting</span></div>
+      <div class="panel-body">
+        <div class="wf-row"><div class="wf-label">New store openings</div><div class="wf-bar-wrap"><div class="wf-bar pos" style="left:0;width:80%"></div></div><div class="wf-val pos">+9.2%</div></div>
+        <div class="wf-row"><div class="wf-label">Premium mix shift</div><div class="wf-bar-wrap"><div class="wf-bar pos" style="left:0;width:60%"></div></div><div class="wf-val pos">+5.8%</div></div>
+        <div class="wf-row"><div class="wf-label">Cat G share gain</div><div class="wf-bar-wrap"><div class="wf-bar pos" style="left:0;width:50%"></div></div><div class="wf-val pos">+2.1 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Cat F share gain</div><div class="wf-bar-wrap"><div class="wf-bar pos" style="left:0;width:35%"></div></div><div class="wf-val pos">+0.6 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Cat E share gain</div><div class="wf-bar-wrap"><div class="wf-bar pos" style="left:0;width:22%"></div></div><div class="wf-val pos">+0.3 pts</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Share bleeders</div><span class="badge badge-red">Priority fix</span></div>
+      <div class="panel-body">
+        <div class="wf-row"><div class="wf-label">Cat A share loss</div><div class="wf-bar-wrap"><div class="wf-bar neg" style="right:0;left:auto;width:76%"></div></div><div class="wf-val neg">−1.4 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Cat B share loss</div><div class="wf-bar-wrap"><div class="wf-bar neg" style="right:0;left:auto;width:44%"></div></div><div class="wf-val neg">−0.6 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Range delistings</div><div class="wf-bar-wrap"><div class="wf-bar neg" style="right:0;left:auto;width:33%"></div></div><div class="wf-val neg">−0.5 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Cat C share loss</div><div class="wf-bar-wrap"><div class="wf-bar neg" style="right:0;left:auto;width:20%"></div></div><div class="wf-val neg">−0.2 pts</div></div>
+        <div class="wf-row"><div class="wf-label">Cat D share loss</div><div class="wf-bar-wrap"><div class="wf-bar neg" style="right:0;left:auto;width:18%"></div></div><div class="wf-val neg">−0.2 pts</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== SHARE TABLE ======================== -->
+<div class="tab-panel" id="tab-share-table">
+  <div class="controls-bar">
+    <div class="ctrl-label">View:</div>
+    <div class="seg-group" id="share-view-group">
+      <button class="seg-btn active" onclick="setShareView('abs',this)">Absolute share</button>
+      <button class="seg-btn" onclick="setShareView('chg',this)">Change vs PY</button>
+      <button class="seg-btn" onclick="setShareView('idx',this)">Growth index</button>
+    </div>
+  </div>
+
+  <div class="insight-box" id="share-insight-box">
+    <b>How to read:</b> Weight = this category's share of total customer sales. Change pts = share point change vs same period prior year. Highlighted rows are category totals. Cat A and Cat B are the two highest-weight measured categories — their combined decline accounts for most of the total gap.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead id="share-thead">
+        <tr>
+          <th>Category</th>
+          <th class="ctr">Weight</th>
+          <th>1M share</th>
+          <th>1M chg</th>
+          <th>3M share</th>
+          <th>3M chg</th>
+          <th>6M share</th>
+          <th>6M chg</th>
+          <th>Full yr share</th>
+          <th>Full yr chg</th>
+        </tr>
+      </thead>
+      <tbody id="share-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== DRIVERS ======================== -->
+<div class="tab-panel" id="tab-drivers">
+  <div class="controls-bar">
+    <div class="ctrl-label">Category:</div>
+    <select id="cat-select" onchange="renderDrivers()">
+      <option value="catA">Cat A (largest decliner)</option>
+      <option value="catB">Cat B</option>
+      <option value="catE">Cat E (gainer)</option>
+    </select>
+  </div>
+  <div id="drivers-content"></div>
+</div>
+
+<!-- ======================== STORE SEGMENTS ======================== -->
+<div class="tab-panel" id="tab-store-segments">
+
+  <div class="insight-box">
+    <b>Segmentation logic:</b> Stores classified on three axes — format (premium flagship vs standard vs convenience), spend tier (premium vs mainstream), and size. Collapsed into five actionable segment labels for ranging and activation targeting.
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Store segment performance snapshot</div>
+    <div class="section-caption">Rolling 3-month · share point change vs prior year</div>
+  </div>
+
+  <div class="seg-grid">
+    <div class="seg-card" style="border-top:3px solid var(--red)">
+      <div class="seg-name">Premium Flagship</div>
+      <div class="seg-detail">High-end format · premium shopper · destination visit</div>
+      <div class="seg-bar"><div class="seg-bar-fill" style="width:12%;background:var(--red)"></div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Doors (share of total)</div><div class="seg-stat-val">~12%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Sales weight</div><div class="seg-stat-val">22%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Share change vs PY</div><div class="seg-stat-val neg">−2.1 pts</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Our distribution depth</div><div class="seg-stat-val neg">&lt;50% (Form X)</div></div>
+      <div class="seg-note" style="color:var(--red)">Priority: close distribution gaps first, then innovation</div>
+    </div>
+    <div class="seg-card" style="border-top:3px solid var(--amber)">
+      <div class="seg-name">Standard Flagship</div>
+      <div class="seg-detail">Standard-format flagship · mixed shopper profile</div>
+      <div class="seg-bar"><div class="seg-bar-fill" style="width:28%;background:var(--amber)"></div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Doors (share of total)</div><div class="seg-stat-val">~19%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Sales weight</div><div class="seg-stat-val">26%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Share change vs PY</div><div class="seg-stat-val neg">−0.9 pts</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Our distribution depth</div><div class="seg-stat-val">62%</div></div>
+      <div class="seg-note" style="color:var(--amber)">Priority: assortment completion, trial activation</div>
+    </div>
+    <div class="seg-card" style="border-top:3px solid var(--green)">
+      <div class="seg-name">Community Standard</div>
+      <div class="seg-detail">Volume-led local doors · core repeat shopper</div>
+      <div class="seg-bar"><div class="seg-bar-fill" style="width:60%;background:var(--green)"></div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Doors (share of total)</div><div class="seg-stat-val">~42%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Sales weight</div><div class="seg-stat-val">35%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Share change vs PY</div><div class="seg-stat-val pos">+0.2 pts</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Our distribution depth</div><div class="seg-stat-val">81%</div></div>
+      <div class="seg-note" style="color:var(--green)">Protect: maintain presence, defend promo efficiency</div>
+    </div>
+    <div class="seg-card" style="border-top:3px solid var(--primary)">
+      <div class="seg-name">Specialist Format</div>
+      <div class="seg-detail">Category-specialist doors · specific shopper mission</div>
+      <div class="seg-bar"><div class="seg-bar-fill" style="width:42%;background:var(--primary)"></div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Doors (share of total)</div><div class="seg-stat-val">~18%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Sales weight</div><div class="seg-stat-val">12%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Share change vs PY</div><div class="seg-stat-val neu">flat</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Our distribution depth</div><div class="seg-stat-val">74%</div></div>
+      <div class="seg-note" style="color:var(--primary)">Watch: upcoming innovation pipeline has fit here</div>
+    </div>
+    <div class="seg-card" style="border-top:3px solid var(--gray-500)">
+      <div class="seg-name">Convenience / Express</div>
+      <div class="seg-detail">Small-format · high turnover · convenience mission</div>
+      <div class="seg-bar"><div class="seg-bar-fill" style="width:72%;background:var(--gray-500)"></div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Doors (share of total)</div><div class="seg-stat-val">~11%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Sales weight</div><div class="seg-stat-val">5%</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Share change vs PY</div><div class="seg-stat-val pos">+0.4 pts</div></div>
+      <div class="seg-stat-row"><div class="seg-stat-label">Our distribution depth</div><div class="seg-stat-val">88%</div></div>
+      <div class="seg-note" style="color:var(--gray-600)">Low priority: small sales weight, limited upside</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Priority ranging gaps by segment</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>SKU (form · variant · pack)</th>
+          <th>Premium Flagship</th>
+          <th>Standard Flagship</th>
+          <th>Community Std</th>
+          <th>Specialist</th>
+          <th>Target</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Brand 1 · Form X · Pack M</td>
+          <td><span class="chip neg">42%</span></td>
+          <td><span class="chip neg">58%</span></td>
+          <td><span class="chip pos">79%</span></td>
+          <td><span class="chip neg">61%</span></td>
+          <td>100%</td>
+        </tr>
+        <tr>
+          <td>Brand 1 · Variant Alpha · Refill</td>
+          <td><span class="chip neg">18%</span></td>
+          <td><span class="chip neg">24%</span></td>
+          <td><span class="chip neg">31%</span></td>
+          <td><span class="chip neg">19%</span></td>
+          <td>80%</td>
+        </tr>
+        <tr>
+          <td>Brand 2 · Form Y · Pack S</td>
+          <td><span class="chip neg">35%</span></td>
+          <td><span class="chip neg">44%</span></td>
+          <td><span class="chip pos">72%</span></td>
+          <td><span class="chip pos">68%</span></td>
+          <td>80%</td>
+        </tr>
+        <tr>
+          <td>Brand 2 · Form Y · Pack L</td>
+          <td><span class="chip neg">20%</span></td>
+          <td><span class="chip neg">28%</span></td>
+          <td><span class="chip neg">41%</span></td>
+          <td><span class="chip neg">33%</span></td>
+          <td>70%</td>
+        </tr>
+        <tr>
+          <td>Launch SKU A (innovation)</td>
+          <td><span class="chip neg">0%</span></td>
+          <td><span class="chip neg">0%</span></td>
+          <td><span class="chip neg">0%</span></td>
+          <td><span class="chip neg">0%</span></td>
+          <td>100%</td>
+        </tr>
+        <tr>
+          <td>Brand 2 · Variant Beta · Pack M</td>
+          <td><span class="chip pos">81%</span></td>
+          <td><span class="chip pos">76%</span></td>
+          <td><span class="chip neg">55%</span></td>
+          <td><span class="chip pos">88%</span></td>
+          <td>90%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="font-size:11px;color:var(--text-muted);margin-top:-16px;margin-bottom:24px;">Distribution depth = % of eligible doors carrying the SKU. Gaps in Premium Flagship carry outsized sales weight impact vs door count.</div>
+</div>
+
+<!-- ======================== BUILDING BLOCKS ======================== -->
+<div class="tab-panel" id="tab-building-blocks">
+  <div class="controls-bar">
+    <div class="ctrl-label">Brand:</div>
+    <div class="seg-group">
+      <button class="seg-btn active" onclick="setBrand(this,'brand1')">Brand 1 (Cat A)</button>
+      <button class="seg-btn" onclick="setBrand(this,'brand2')">Brand 2 (Cat B)</button>
+    </div>
+  </div>
+  <div id="bb-content"></div>
+</div>
+
+<!-- ======================== GAMEPLAN ======================== -->
+<div class="tab-panel" id="tab-gameplan">
+
+  <div class="insight-box">
+    <b>Strategic frame:</b> Near-term share likely continues to soften as legacy SKU delistings lap and innovation isn't yet fully ranged. Recovery is back-weighted — contingent on (1) speed-to-shelf for upcoming innovation, (2) trial activation targeting the premium shopper, and (3) consistent in-store visibility against emerging competition.
+  </div>
+
+  <div class="gp-grid">
+    <div class="gp-card">
+      <div class="gp-card-header">
+        <div class="gp-brand">Brand 1 — Cat A</div>
+        <div class="gp-iya down">H1: declining → H2: recovering</div>
+      </div>
+      <div class="gp-body">
+        <div class="gp-sec-label">Base assumptions</div>
+        <div class="gp-item">Form X base at +13% rolling 6M trend; Form Y at +7%</div>
+        <div class="gp-item">Recent delistings create a near-term volume headwind before lapping</div>
+        <div class="gp-sec-label">Key building blocks</div>
+        <div class="gp-item">Innovation A launch (H1): addresses hydration benefit space; sourcing from emerging competitors</div>
+        <div class="gp-item">Form X trial offer: mechanically proven to drive +11% volume uplift when sufficiently deep</div>
+        <div class="gp-item">Loyalty-targeted trial program (H2): conservative +15% new-buyer assumption</div>
+        <div class="gp-item">Distribution gap close: priority SKUs in Premium Flagship → H2 effect given ranging cycle timing</div>
+        <div class="gp-sec-label">Cross-functional asks</div>
+        <div class="gp-ask">Need: trial activation plan (offline + online) for innovation launch; digital awareness support on top of standard loyalty reach; store-level prioritization analysis to guide ranging push by segment.</div>
+      </div>
+    </div>
+    <div class="gp-card">
+      <div class="gp-card-header">
+        <div class="gp-brand">Brand 2 — Cat B</div>
+        <div class="gp-iya down">H1: flat/down → H2: recovering</div>
+      </div>
+      <div class="gp-body">
+        <div class="gp-sec-label">Base assumptions</div>
+        <div class="gp-item">Pack L at +9% trend; Pack S at +5%; Refill format accelerating +40%</div>
+        <div class="gp-item">Delisting of legacy variant (Variant Gamma) creates ~8% headwind in H1 before lapping</div>
+        <div class="gp-sec-label">Key building blocks</div>
+        <div class="gp-item">Innovation B (functional benefit): full launch H1; targeting Specialist and Premium Flagship tiers first</div>
+        <div class="gp-item">Innovation C (naturals / premiumization play): H2 launch — ranging builds through second half</div>
+        <div class="gp-item">Loyalty-targeted trial vs key competitor: proven category switching when targeted</div>
+        <div class="gp-item">Innovation C buy-one-get-one trial mechanic: proven +20% volume vs months without deep promotion</div>
+        <div class="gp-sec-label">Cross-functional asks</div>
+        <div class="gp-ask">Need: right trial mechanic for premium innovation (depth vs frequency trade-off); digital creator campaign to counter competitor share-of-voice in Premium Flagship stores.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Actions by lever — who owns what</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:130px">Lever</th>
+          <th style="text-align:left;min-width:220px">Our action</th>
+          <th style="text-align:left;min-width:220px">Cross-functional / account ask</th>
+          <th>Timing</th>
+          <th>Est. share impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">Innovation A</span></td>
+          <td style="text-align:left">Full ranging in Premium Flagship (100%) + standard floors (80%) by launch week 4</td>
+          <td style="text-align:left">Confirm shelf slot timing; fund loyalty activation on launch window</td>
+          <td>H1 Q1</td>
+          <td class="pos">+0.4 pts</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Innovation B</span></td>
+          <td style="text-align:left">Scale to 90% distribution in Specialist + Premium Flagship tiers by H2</td>
+          <td style="text-align:left">Joint digital creator campaign; shelf space allocation</td>
+          <td>H1–H2</td>
+          <td class="pos">+0.5 pts</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-teal">Trial activation</span></td>
+          <td style="text-align:left">Trial mechanic on Form X; deep promotion on Innovation C at launch window</td>
+          <td style="text-align:left">Confirm promotion execution depth; test online vs in-store split</td>
+          <td>H2</td>
+          <td class="pos">+0.3 pts</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-amber">Ranging</span></td>
+          <td style="text-align:left">Store-level priority analysis → prioritized SKU list by segment; push shelf eye-level placement</td>
+          <td style="text-align:left">Range review slot inclusion; placement alignment with buyer</td>
+          <td>H2 (cycle timing)</td>
+          <td class="pos">+0.2 pts</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">Visibility</span></td>
+          <td style="text-align:left">Propose good / better / best shelf concept; test dual-placement pilot in Premium Flagship</td>
+          <td style="text-align:left">Space-to-sales discussion with buyer; resolve bottom-shelf placement issue</td>
+          <td>H2 pilot</td>
+          <td class="pos">+0.2 pts</td>
+        </tr>
+        <tr style="background:var(--green-light)">
+          <td style="font-weight:700;color:var(--green)">Total scenario</td>
+          <td style="text-align:left;font-weight:600">If all building blocks execute on upside scenario</td>
+          <td style="text-align:left;color:var(--text-muted);font-style:italic">Dependent on cross-functional delivery</td>
+          <td>Full year exit</td>
+          <td style="font-weight:700;color:var(--green)">+0.8–1.2 pts</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warn-box">
+    <b>Risks:</b> If innovation ranging is delayed beyond 8 weeks from launch, H2 share recovery is at risk. Competitor response (exclusive shelf space, creator spend in Premium Flagship) may continue to outpace our visibility investment. Trial program effectiveness is the key swing variable — depends on targeting quality and reach within loyalty database.
+  </div>
+</div>
+
+</div><!-- /.main -->
+
+<div class="footer">
+  Synthetic data · Illustrative methodology · Portfolio tool only · Not for distribution
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ---------- SHARE TABLE DATA ---------- */
+const shareRows = [
+  { label:'TOTAL CUSTOMER', wt:'100%', group:true,
+    s1:8.4,c1:-0.2,i1:98,  s3:8.6,c3:-0.1,i3:99,  s6:8.5,c6:-0.1,i6:99,  sy:8.4,cy:-0.8,iy:97 },
+  { label:'Total (measured categories)', wt:'24%', sub:true,
+    s1:13.1,c1:-0.2,i1:98, s3:13.4,c3:-0.8,i3:95, s6:13.6,c6:-1.1,i6:94, sy:13.2,cy:-1.4,iy:94 },
+  { label:'Cat A', wt:'11%', ind:1,
+    s1:11.3,c1:0.1,i1:101, s3:11.0,c3:-0.8,i3:94, s6:11.2,c6:-1.5,i6:91, sy:11.4,cy:-1.4,iy:92 },
+  { label:'Cat B', wt:'13%', ind:1,
+    s1:14.8,c1:0.1,i1:101, s3:14.9,c3:-0.5,i3:97, s6:15.1,c6:-0.4,i6:97, sy:15.0,cy:-0.6,iy:97 },
+  { label:'Total (other categories)', wt:'76%', sub:true,
+    s1:5.8,c1:-0.1,i1:99,  s3:5.9,c3:0.1,i3:101,  s6:5.7,c6:0.0,i6:100, sy:5.8,cy:-0.1,iy:99 },
+  { label:'Cat C', wt:'10%', ind:1,
+    s1:12.1,c1:-0.2,i1:98, s3:12.0,c3:-0.3,i3:97, s6:12.2,c6:-0.1,i6:99, sy:12.0,cy:-0.2,iy:98 },
+  { label:'Cat D', wt:'8%', ind:1,
+    s1:3.7,c1:-0.2,i1:95,  s3:3.9,c3:0.0,i3:100,  s6:3.7,c6:-0.1,i6:99, sy:3.8,cy:-0.2,iy:97 },
+  { label:'Cat E', wt:'17%', ind:1,
+    s1:4.4,c1:0.3,i1:107,  s3:4.2,c3:0.2,i3:105,  s6:4.1,c6:0.3,i6:108, sy:4.3,cy:0.3,iy:107 },
+  { label:'Cat F', wt:'9%', ind:1,
+    s1:52.3,c1:-1.2,i1:102,s3:51.0,c3:0.4,i3:101, s6:50.8,c6:0.5,i6:101, sy:50.6,cy:0.6,iy:101 },
+  { label:'Cat G', wt:'8%', ind:1,
+    s1:71.2,c1:2.0,i1:104, s3:69.8,c3:2.4,i3:103, s6:69.4,c6:2.2,i6:103, sy:69.3,cy:2.1,iy:103 },
+];
+
+let shareView = 'abs';
+
+function chip(v, isIdx) {
+  if (v===null||v===undefined) return '—';
+  if (isIdx) {
+    const cl = v>100?'pos':v<100?'neg':'neu';
+    return `<span class="chip ${cl}">${v}</span>`;
+  }
+  const s=(v>0?'+':'')+v.toFixed(1);
+  const c=v>0.04?'pos':v<-0.04?'neg':'neu';
+  return `<span class="chip ${c}">${s}</span>`;
+}
+
+const shareHeaders = {
+  abs: ['1M share','1M chg','3M share','3M chg','6M share','6M chg','Full yr share','Full yr chg'],
+  chg: ['1M chg','3M chg','6M chg','Full yr chg'],
+  idx: ['1M index','3M index','6M index','Full yr index'],
+};
+
+const shareInsights = {
+  abs: "<b>Absolute share:</b> Each cell shows the brand's share of total category sales in that customer, for that time window. Highlighted rows are category totals.",
+  chg: "<b>Change vs prior year:</b> Share point change vs same period last year. Green = gaining, red = losing. Focus on Cat A (−1.4 pts full year) and Cat B (−0.6 pts) as the two priority gaps.",
+  idx: "<b>Growth index:</b> Volume growth vs same period prior year (100 = flat, 110 = +10%). Index above 100 does not guarantee share gain — if the category or customer grew faster, share can still decline.",
+};
+
+function setShareView(view, btn) {
+  shareView = view;
+  document.querySelectorAll('#share-view-group .seg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('share-insight-box').innerHTML = shareInsights[view];
+  buildShareTable();
+}
+
+function buildShareTable() {
+  const thead = document.getElementById('share-thead');
+  const headers = shareHeaders[shareView];
+  thead.innerHTML = '<tr><th>Category</th><th class="ctr">Weight</th>' +
+    headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+
+  const tb=document.getElementById('share-tbody');
+  tb.innerHTML='';
+  shareRows.forEach(r=>{
+    const tr=document.createElement('tr');
+    if(r.group) tr.className='row-group';
+    else if(r.sub) tr.className='row-subgroup';
+    const name=r.ind?`<td class="indent">${r.label}</td>`:`<td>${r.label}</td>`;
+
+    let cells = '';
+    if (shareView === 'abs') {
+      cells = `<td>${r.s1.toFixed(1)}%</td><td>${chip(r.c1)}</td>
+        <td>${r.s3.toFixed(1)}%</td><td>${chip(r.c3)}</td>
+        <td>${r.s6.toFixed(1)}%</td><td>${chip(r.c6)}</td>
+        <td>${r.sy.toFixed(1)}%</td><td>${chip(r.cy)}</td>`;
+    } else if (shareView === 'chg') {
+      cells = `<td>${chip(r.c1)}</td><td>${chip(r.c3)}</td><td>${chip(r.c6)}</td><td>${chip(r.cy)}</td>`;
+    } else {
+      cells = `<td>${chip(r.i1,true)}</td><td>${chip(r.i3,true)}</td><td>${chip(r.i6,true)}</td><td>${chip(r.iy,true)}</td>`;
+    }
+
+    tr.innerHTML=`${name}<td class="ctr">${r.wt}</td>${cells}`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- DRIVERS DATA ---------- */
+const driversData = {
+  catA: {
+    title: 'Cat A — largest share decliner',
+    summary: 'Share declining −1.4 pts full year. All of the loss is flowing to emerging and premium competitor brands addressing elevated benefit spaces (hydration, anti-aging, naturals) that the current portfolio does not fully cover. The fastest-growing product form (Form X) is under-distributed in the highest-value store segment.',
+    drivers: [
+      {l:'Form X growth',v:2.8,n:'Fastest-growing form; over-indexed vs channel average; still gaining'},
+      {l:'New store uplift',v:1.4,n:'Store expansion contributing net new volume across all forms'},
+      {l:'Larger pack adoption',v:0.9,n:'Shoppers trading up to larger formats in core variants'},
+    ],
+    drainers: [
+      {l:'Core variant delistings',v:-2.2,n:'Removed SKUs directly cost ~0.7 pts; benefit space gap widened'},
+      {l:'Benefit space gap',v:-1.8,n:'100% of share loss going to brands in hydration / anti-aging spaces'},
+      {l:'Distribution gap (Prem. Flagship)',v:-1.1,n:'Form X depth <50% in highest-value segment; competitors at 80–100%'},
+      {l:'Shelf placement pressure',v:-0.6,n:'Inconsistent placement; emerging brands securing better shelf positions'},
+    ],
+    flow: [
+      {n:'Emerging Brand X',m:'+2.4 pts',d:'Hydration proposition; premium price tier; exclusive premium-format placement'},
+      {n:'Competitor Intl Brand Y',m:'+1.8 pts',d:'Anti-aging angle resonates with premium shopper; strong loyalty reach'},
+      {n:'Local mid-tier brand',m:'+0.6 pts',d:'Naturals; value price; gaining in standard-tier stores'},
+      {n:'Our brand',m:'−1.4 pts',d:'Gaps: benefit space, distribution in premium formats, delisting effect'},
+    ],
+    opps: [
+      'Full ranging of Innovation A (hydration benefit) across Premium Flagship — addresses the exact benefit gap driving share loss',
+      'Close Form X distribution from <50% to 100% in Premium Flagship — largest single ranging opportunity',
+      'Trial mechanic at proven depth: Form X trial offer mechanically shown to drive +11% uplift when well-executed',
+    ]
+  },
+  catB: {
+    title: 'Cat B — share declining',
+    summary: 'Share declining −0.6 pts full year driven by premium format losses. 100% of loss flowing to premium and imported brands — not mainstream competitors. Sub-category B2 is stable. The recovery path is the upcoming innovation pipeline (Innovation B, C) but H2 timing on ranging is a real constraint.',
+    drivers: [
+      {l:'Sub-cat B2 stable',v:0.3,n:'Core sub-category maintained share; Brand 2 premium variants growing'},
+      {l:'Large-pack format growth',v:0.6,n:'Shopper premiumization driving larger-pack adoption'},
+      {l:'New store contribution',v:0.8,n:'Store expansion net positive despite declining share'},
+    ],
+    drainers: [
+      {l:'Legacy variant delisting',v:-1.4,n:'High-volume SKU removed; creates ~8% headwind in H1 before lapping'},
+      {l:'Premium import brands',v:-1.0,n:'Import / premium brands structurally overdeveloped in flagship format'},
+      {l:'Emerging mid-tier',v:-0.5,n:'Mid-tier naturals capturing treatment and benefit-care shoppers'},
+      {l:'Refill under-ranging',v:-0.3,n:'Fastest-growing pack type but lowest distribution depth — missed pull-through'},
+    ],
+    flow: [
+      {n:'Premium Import A',m:'+1.2 pts',d:'Exclusive to Premium Flagship; benefit-forward proposition; high sales-weight capture'},
+      {n:'Premium Import B',m:'+0.8 pts',d:'Natural-origin; over-ranged in Standard Flagship'},
+      {n:'Emerging local naturals',m:'+0.5 pts',d:'Mid-tier price; fastest-growing brand in this customer'},
+      {n:'Our brand',m:'−0.6 pts',d:'Recovering from delistings; Innovation B + C pipeline is the recovery path'},
+    ],
+    opps: [
+      'Innovation B (functional benefit): 90% distribution in Specialist + Premium Flagship by H2 — direct counter to premium import share capture',
+      'Innovation C (naturals): target the emerging local brand shopper; needs awareness investment to pull through trial',
+      'Refill format ranging push: fastest-growing pack type, lowest current depth — quick win with limited ranging cycle dependency',
+    ]
+  },
+  catE: {
+    title: 'Cat E — share gaining',
+    summary: 'Share gaining +0.3 pts full year. Driven by premiumization tailwind and strong brand positioning in premium-format stores. Not a priority for intervention — protect momentum and ride the structural trend.',
+    drivers: [
+      {l:'Premium mix tailwind',v:1.2,n:'Shopper mix shifting to premium; our portfolio well-positioned vs competition'},
+      {l:'Premium format indexing',v:0.8,n:'Premium-store format over-indexed to Cat E spend; structurally positive'},
+      {l:'Recent innovation',v:0.4,n:'Recent Cat E launches performing above plan in premium-format stores'},
+    ],
+    drainers: [
+      {l:'Emerging niche brands',v:-0.7,n:'Niche imported brands growing fast in Premium Flagship — worth monitoring'},
+      {l:'Benefit sub-category gap',v:-0.5,n:'One benefit sub-category (serums / treatments) underdeveloped vs market trend'},
+    ],
+    flow: [
+      {n:'Niche Import Brand Z',m:'+0.9 pts',d:'Treatment / serum; fast-growing in Premium Flagship'},
+      {n:'Local value brand',m:'+0.3 pts',d:'Natural-angle; under-priced vs our range; community store play'},
+      {n:'Our brand',m:'+0.3 pts',d:'Holding position; watch treatment gap vs niche imports accelerating'},
+    ],
+    opps: [
+      'Maintain distribution velocity — no critical gaps to fix in priority tiers',
+      'Monitor niche brand acceleration in Premium Flagship; assess if a treatment-focused launch is warranted in H2',
+      'Loyalty-targeted trial in Cat E subscriber segment — upsell existing buyers to premium innovations',
+    ]
+  }
+};
+
+function renderDrivers() {
+  const cat=document.getElementById('cat-select').value;
+  const d=driversData[cat];
+  const el=document.getElementById('drivers-content');
+
+  const wfRows=(arr,pos)=>arr.map(r=>`
+    <div class="wf-row">
+      <div class="wf-label">${r.l}</div>
+      <div class="wf-bar-wrap"><div class="wf-bar ${pos?'pos':'neg'}" style="${pos?'left:0':'right:0;left:auto'};width:${Math.abs(r.v)*20}%"></div></div>
+      <div class="wf-val ${pos?'pos':'neg'}">${pos?'+':''}${r.v.toFixed(1)}</div>
+    </div>
+    <div class="wf-note">${r.n}</div>
+  `).join('');
+
+  const flowRows=d.flow.map(c=>`
+    <tr>
+      <td style="text-align:left;font-weight:500">${c.n}</td>
+      <td>${c.m.startsWith('+')?`<span class="chip pos">${c.m}</span>`:`<span class="chip neg">${c.m}</span>`}</td>
+      <td style="text-align:left;font-size:11.5px;color:var(--text-muted)">${c.d}</td>
+    </tr>
+  `).join('');
+
+  el.innerHTML=`
+    <div class="insight-box"><b>${d.title}</b><br>${d.summary}</div>
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">What's driving share up</div><span class="badge badge-green">Working</span></div>
+        <div class="panel-body">${wfRows(d.drivers,true)}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">What's costing share</div><span class="badge badge-red">Fix</span></div>
+        <div class="panel-body">${wfRows(d.drainers,false)}</div>
+      </div>
+    </div>
+    <div class="section-header" style="margin-top:0">
+      <div class="section-title">Competitive share flow — where it's going and why</div>
+    </div>
+    <div class="table-wrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th style="text-align:left">Brand</th><th>Share move vs PY</th><th style="text-align:left">What's driving it</th></tr></thead>
+        <tbody>${flowRows}</tbody>
+      </table>
+    </div>
+    <div class="section-header" style="margin-top:0">
+      <div class="section-title">Key opportunities to close the gap</div>
+    </div>
+    <div class="panel" style="margin-bottom:24px">
+      <div class="panel-body">
+        ${d.opps.map((o,i)=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--primary);font-weight:700;min-width:20px">${i+1}.</span><span>${o}</span></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- BUILDING BLOCKS ---------- */
+const bbData = {
+  brand1: {
+    note: 'Brand 1 · Cat A · Quarterly volume projections (indexed, synthetic)',
+    rows: [
+      {l:'Form Y base (+7% trend)',       q:[32,35,31,30],  tot:128, t:'base'},
+      {l:'Form X base (+13% trend)',      q:[66,81,75,73],  tot:295, t:'base'},
+      {l:'Incremental from building blocks', q:[11,16,15,15], tot:57, t:'bb'},
+      {l:'  Innovation A — Form X launch',q:[1.9,2.9,2.7,3.0],tot:10.5,t:'sub'},
+      {l:'  Innovation A — Form Y extension',q:[0,0.3,0.4,0.6],tot:1.3,t:'sub'},
+      {l:'  Trial mechanic (Form X)',     q:[7.3,8.9,8.2,7.9], tot:32.3, t:'sub'},
+      {l:'  Loyalty trial program',       q:[0,0.4,0.4,0.5],  tot:1.3, t:'sub'},
+      {l:'  Pack-size ranging push',      q:[1.6,1.8,1.6,1.5], tot:6.5, t:'sub'},
+      {l:'Cannibalization / overlap',     q:[-9.2,-6.4,-5.2,-5.1], tot:-25.9, t:'risk'},
+      {l:'TOTAL — BASE SCENARIO',        q:[100,127,116,113], tot:456, t:'total'},
+      {l:'Growth index vs prior year',    q:[113,120,121,122], tot:119, t:'iya'},
+      {l:'— UPSIDE SCENARIO (if all activation executes) —',q:[null,null,null,null],tot:null,t:'hdr'},
+      {l:'  Innovation A trial offer',    q:[0.2,0.3,0.3,0.3], tot:1.0, t:'sub'},
+      {l:'  Digital / creator push',      q:[0,0.5,0.5,0.5],   tot:1.5, t:'sub'},
+      {l:'  Ranging gap close',           q:[0,0,1.1,1.1],      tot:2.2, t:'sub'},
+      {l:'TOTAL — UPSIDE SCENARIO',      q:[100,128,118,115], tot:461, t:'total'},
+      {l:'Growth index (upside)',         q:[113,121,124,125], tot:121, t:'iya'},
+    ]
+  },
+  brand2: {
+    note: 'Brand 2 · Cat B · Quarterly volume projections (indexed, synthetic)',
+    rows: [
+      {l:'Pack L base (+9% trend)',       q:[54,58,58,52],  tot:222, t:'base'},
+      {l:'Pack S base (+5% trend)',       q:[13,12,13,12],  tot:50, t:'base'},
+      {l:'Refill format base (+40% trend)',q:[1.2,1.4,1.5,1.4],tot:5.5,t:'base'},
+      {l:'Incremental from building blocks',q:[7.9,15.9,17.1,20.9],tot:61.8,t:'bb'},
+      {l:'  Innovation B (functional)',   q:[6.9,9.2,8.6,10.4],tot:35.1,t:'sub'},
+      {l:'  Innovation C (naturals)',     q:[0,4.7,6.2,7.8],  tot:18.7,t:'sub'},
+      {l:'  Loyalty trial — Innovation C',q:[0,0.7,0.9,1.2],  tot:2.8, t:'sub'},
+      {l:'  Loyalty trial — Innovation B',q:[1.0,1.4,1.3,1.6], tot:5.3,t:'sub'},
+      {l:'Cannibalization / overlap',     q:[-3.6,-4.8,-5.4,-5.0],tot:-18.8,t:'risk'},
+      {l:'TOTAL — BASE SCENARIO',        q:[73,83,84,81], tot:321, t:'total'},
+      {l:'Growth index vs prior year',    q:[97,107,106,113], tot:106, t:'iya'},
+      {l:'— UPSIDE SCENARIO (if all activation executes) —',q:[null,null,null,null],tot:null,t:'hdr'},
+      {l:'  Pack-size ranging push',      q:[0,0,0.8,0.8],  tot:1.6, t:'sub'},
+      {l:'  Innovation B trial mechanic', q:[0.7,0.7,0.7,0.5],tot:2.6,t:'sub'},
+      {l:'  Innovation C trial offer',    q:[0,0.9,1.2,1.6],  tot:3.7,t:'sub'},
+      {l:'  Digital creator push',        q:[0.7,0.9,0.9,1.0], tot:3.5,t:'sub'},
+      {l:'TOTAL — UPSIDE SCENARIO',      q:[74,86,87,85], tot:332, t:'total'},
+      {l:'Growth index (upside)',         q:[99,111,112,119], tot:110, t:'iya'},
+    ]
+  }
+};
+
+function fmtBB(v,t){
+  if(v===null) return '';
+  if(t==='iya') return `${v}<span style="color:${v>=100?'var(--green)':'var(--red)'};margin-left:3px">${v>=100?'▲':'▼'}</span>`;
+  if(t==='hdr') return '';
+  if(v===0) return '—';
+  return v.toFixed(1);
+}
+
+function renderBB(brand){
+  const d=bbData[brand];
+  const qLabels=['Q1','Q2','Q3','Q4'];
+  const rows=d.rows.map(r=>{
+    if(r.t==='hdr') return `<tr class="hdr-row"><td colspan="6">${r.l}</td></tr>`;
+    let cls='';
+    if(r.t==='total') cls='total-row';
+    else if(r.t==='sub') cls='sub-row';
+    else if(r.t==='risk') cls='risk-row';
+    else if(r.t==='bb') cls='bb-row';
+    else if(r.t==='iya') cls='iya-row';
+    const qcells=r.q.map(v=>`<td>${fmtBB(v,r.t)}</td>`).join('');
+    const nameStyle=r.t==='sub'?'':r.t==='total'||r.t==='iya'?'font-weight:700':'font-weight:500';
+    return `<tr class="${cls}"><td style="${nameStyle};text-align:left">${r.l}</td>${qcells}<td>${fmtBB(r.tot,r.t)}</td></tr>`;
+  }).join('');
+
+  document.getElementById('bb-content').innerHTML=`
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${d.note}</div>
+    <div class="bb-table-wrap">
+      <div class="table-wrap">
+        <table class="bb-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Building block</th>
+              <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th>
+              <th>Full year</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:-12px;margin-bottom:20px">Volumes indexed for confidentiality. Growth index = current period vs same period prior year. Upside scenario assumes all activation levers execute at plan.</div>
+  `;
+}
+
+/* ---------- OVERVIEW CHART ---------- */
+function renderChart(){
+  const ctx=document.getElementById('chart-overview');
+  if(!ctx) return;
+  const labels=['Cat G','Cat F','Cat E','Cat D (−)','Cat C (−)','Cat B (−)','Cat A (−)'];
+  const data=[2.1,0.6,0.3,-0.2,-0.2,-0.6,-1.4];
+  const colors=data.map(v=>v>=0?'#2F9E44':'#C92A2A');
+  new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Share pts vs PY',data,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.raw>0?'+':'')+ctx.raw.toFixed(1)+' pts'}}},
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{font:{size:11},callback:v=>(v>0?'+':'')+v.toFixed(1)}},
+        y:{grid:{display:false},ticks:{font:{size:12}}}
+      }
+    }
+  });
+}
+
+/* ---------- NAVIGATION ---------- */
+function showTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setBrand(btn,brand){
+  btn.closest('.seg-group').querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBB(brand);
+}
+
+/* ---------- INIT ---------- */
+buildShareTable();
+renderDrivers();
+renderBB('brand1');
+renderChart();
+</script>
+</body>
+</html>
